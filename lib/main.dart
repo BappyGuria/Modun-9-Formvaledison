@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,90 +34,86 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  double result = 0;
-
-  final TextEditingController _fristNumberControler = TextEditingController();
-  final TextEditingController _sceendNumberControler = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  List<WaterTracker> waterTrackerConsume = [];
+  final TextEditingController _glassCount = TextEditingController(text: '1');
+  int totalGlassCount = 0;
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Form Validation'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _fristNumberControler,
-                  decoration: const InputDecoration(hintText: 'Number 1'),
-                  keyboardType: TextInputType.number,
-                  validator: (String? value){
-                    if(value ?.isEmpty ?? true){
-                      return 'Enter valid value';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                TextFormField(
-                  controller: _sceendNumberControler,
-                  decoration: const InputDecoration(
-                    hintText: 'Number 2',
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (String? value){
-                    if(value == null){
-                      return 'Enter a valid Number';
-                    }if(value.trim().isEmpty){
-                      return 'Enter a valid Number';
-                    }
-                    // if(value ?. isEmpty ?? true){
-                    //   return 'Enter valid Value';
-                    // }
-                    return null;
-                  },
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                ButtonBar(
-                  alignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                        onPressed: () {
-                          if(_formKey.currentState! .validate()){
-                            double fristNumber = double.parse(_fristNumberControler.text.trim());
-                            double sceenNumber = double.parse(_sceendNumberControler.text.trim());
-
-                            print(fristNumber);
-                            print(sceenNumber);
-
-                            result = (fristNumber + sceenNumber);
-
-                            setState(() {
-
-                            });
-                          }
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add')
-                    )
-                  ],
-                ),
-
-                Text('Result is = $result')
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Water Tracker'),
+      ),
+      body: Column(
+        children: [
+          Text(
+            'Total Consume',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          Text(
+            '$totalGlassCount',
+            style: const TextStyle(
+              fontSize: 35,
             ),
           ),
-        ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+
+                width: 100,
+                  child: TextField(
+                    textAlign: TextAlign.center,
+                    controller: _glassCount,
+                    keyboardType: TextInputType.number,
+                  )
+              ),
+              ElevatedButton(
+                  onPressed: () {
+
+                    int amount = int.parse(_glassCount.text.trim());
+                    totalGlassCount += amount;
+                    WaterTracker waterTracker = WaterTracker(DateTime.now(), amount);
+                    waterTrackerConsume.add(waterTracker);
+
+                    setState(() {});
+                  },
+                  child: const Text('Add')),
+            ],
+          ),
+          Expanded(
+              child: ListView.builder(
+                  itemCount: waterTrackerConsume.length,
+                  // reverse: true,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      child: ListTile(
+                        onLongPress: (){
+                          int incrementCount = waterTrackerConsume[index].noOfGlass;
+                          waterTrackerConsume.remove(waterTrackerConsume[index]);
+                          totalGlassCount = totalGlassCount - incrementCount;
+                          setState(() {
+
+                          });
+                        },
+                        leading: CircleAvatar(
+                          child: Text('${index + 1}'),
+                        ),
+                        title: Text(DateFormat('m:h A dd.MM.yyyy')
+                            .format(waterTrackerConsume[index].time)),
+                        trailing:
+                            Text('${waterTrackerConsume[index].noOfGlass}'),
+                      ),
+                    );
+                  }))
+        ],
       ),
     );
   }
+}
+
+class WaterTracker {
+  final DateTime time;
+  final int noOfGlass;
+
+  WaterTracker(this.time, this.noOfGlass);
 }
